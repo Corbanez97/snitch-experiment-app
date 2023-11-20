@@ -5,5 +5,5 @@ showPyplotGlobalUse = false
 [theme]
 base="light"
 primaryColor="#5000ff"
-secondaryBackgroundColor="#ffffff"
+secondaryBackgroundColor="#e6e6ff"
 textColor="#5000ff"

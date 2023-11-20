@@ -1,67 +1,200 @@
-import cv2
 import streamlit as st
 
+import cv2
 import mediapipe as mp
 
 import time
+import datetime
+
+import uuid
+
+import json
+
+def on_page_load():
+    st.set_page_config(layout="wide")
+
+cursos = [
+    "Administração",
+    "Agronomia",
+    "Arquitetura e Urbanismo",
+    "Arquivologia",
+    "Artes Cênicas",
+    "Artes Visuais",
+    "Biblioteconomia",
+    "Biomedicina",
+    "Biotecnologia",
+    "Ciência da Computação",
+    "Ciências Biológicas – Bacharelado",
+    "Ciências Biológicas – Licenciatura",
+    "Ciências Contábeis",
+    "Ciências Econômicas",
+    "Ciências Sociais – Bacharelado",
+    "Ciências Sociais – Licenciatura",
+    "Design de Moda",
+    "Design Gráfico",
+    "Direito",
+    "Educação Física – Bacharelado e Licenciatura (Matutino)",
+    "Educação Física – Bacharelado e Licenciatura (Noturno)",
+    "Enfermagem",
+    "Engenharia Civil",
+    "Engenharia Elétrica",
+    "Farmácia",
+    "Filosofia",
+    "Física – Bacharelado",
+    "Física – Licenciatura",
+    "Fisioterapia",
+    "Geografia – Bacharelado",
+    "Geografia – Licenciatura",
+    "História",
+    "Jornalismo",
+    "Letras Espanhol",
+    "Letras Francês",
+    "Letras Inglês",
+    "Letras Português",
+    "Matemática – Bacharelado",
+    "Matemática – Licenciatura",
+    "Medicina",
+    "Medicina Veterinária",
+    "Música",
+    "Nutrição",
+    "Odontologia",
+    "Pedagogia",
+    "Psicologia",
+    "Química – Bacharelado",
+    "Química – Licenciatura",
+    "Relações Públicas",
+    "Secretariado Executivo",
+    "Serviço Social",
+    "Zootecnia"
+]
+
+# run first
+on_page_load()   
 
 st.title("Snitch :point_up: ")
-run = st.button('Avaliar Higienização')
-FRAME_WINDOW = st.image([])
-cap = cv2.VideoCapture(0)
-init_frame = 0
-capture = False
 
-if not cap.isOpened():
-    print("Error: Could not open video file")
-    
-BaseOptions = mp.tasks.BaseOptions
-GestureRecognizer = mp.tasks.vision.GestureRecognizer
-GestureRecognizerOptions = mp.tasks.vision.GestureRecognizerOptions
-GestureRecognizerResult = mp.tasks.vision.GestureRecognizerResult
-VisionRunningMode = mp.tasks.vision.RunningMode
+st.markdown("---")
 
-def add_result_to_img(result: GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
-    global cname
-    try:
-        cname = result.gestures[0][0].category_name
-    except:
-        cname = 'None'
+col1, col2 = st.columns([1,1])
 
-options = GestureRecognizerOptions(
-    base_options=BaseOptions(model_asset_path='models/gesture_recognizer.task'),
-    running_mode=VisionRunningMode.LIVE_STREAM,
-    result_callback=add_result_to_img
-    )
+with col1:
 
-with GestureRecognizer.create_from_options(options) as recognizer:
+    with st.form("Registro"):
+
+        myuuid = uuid.uuid4()
+
+        name = st.text_input('Nome', '')
+
+        bday = st.date_input(
+            'Data de nascimento',
+            min_value = datetime.date(1960, 1, 1)
+            )
+
+        degree = st.selectbox(
+            'Formação acadêmica', 
+            [
+                'Médio em andamento',
+                'Médio completo',
+                'Superior em andamento',
+                'Superior completo',
+                'Mestrado em andamento',
+                'Mestrado completo',
+                'Doutorado em andamento',
+                'Doutorado completo'
+                ]
+            )
+
+        area = st.selectbox('Curso', cursos)
+
+        exp = st.selectbox(
+            'Experiência em ambientes hospitalares?', 
+            [
+                'Sim', 
+                'Não'
+                ]
+            )
+
+        run = st.form_submit_button('Validar Higienização')
+
+        if run:
+            data = dict(
+                {
+                    'name': name,
+                    'birth_date': bday.strftime("%Y-%m-%d"),
+                    'degree': degree,
+                    'area': area,
+                    'health_experience': exp,
+                    'capture_id': str(myuuid)
+                }
+            )
+
+with col2:
+
+    BaseOptions = mp.tasks.BaseOptions
+    GestureRecognizer = mp.tasks.vision.GestureRecognizer
+    GestureRecognizerOptions = mp.tasks.vision.GestureRecognizerOptions
+    GestureRecognizerResult = mp.tasks.vision.GestureRecognizerResult
+    VisionRunningMode = mp.tasks.vision.RunningMode
+
+    def add_result_to_img(result: GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
+        global cname
+        try:
+            cname = result.gestures[0][0].category_name
+        except:
+            cname = 'None'
+
+    options = GestureRecognizerOptions(
+        base_options=BaseOptions(model_asset_path='models/gesture_recognizer.task'),
+        running_mode=VisionRunningMode.LIVE_STREAM,
+        result_callback=add_result_to_img
+        )
+
+    if run:
+        st.subheader('Mantenha sua mão aberta')
+
+    FRAME_WINDOW = st.image([])
+    cap = cv2.VideoCapture(0)
+
+    if not cap.isOpened():
+        print("Error: Could not open video file")
+
+    init_frame = 0
+    capture = False
 
     while run:
 
-        success, img = cap.read()
-        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        
-        frame_timestamp_ms = int(time.time() * 1000)
-        
-        mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=imgRGB)
-        
-        recognition_result = recognizer.recognize_async(mp_img, frame_timestamp_ms)
-        
-        try:
-            cv2.putText(imgRGB, f"Gesture: {cname}", (10,70), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 3)
+        with GestureRecognizer.create_from_options(options) as recognizer:
 
-            if cname == 'Open_Palm' and init_frame == 0:
-                init_frame = frame_timestamp_ms
-            elif cname == 'Open_Palm' and (frame_timestamp_ms - init_frame) > 3000:
-                cv2.imwrite("captures/to_evaluate.jpg", img)
-                capture = True
-                break
-            elif cname != 'Open_Palm':
-                init_frame = 0
-        except:
-            pass
+            success, img = cap.read()
+            imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            
+            frame_timestamp_ms = int(time.time() * 1000)
+            
+            mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=imgRGB)
+            
+            recognition_result = recognizer.recognize_async(mp_img, frame_timestamp_ms)
+            
+            try:
+                cv2.putText(imgRGB, f"Gesture: {cname}", (10,70), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 3)
 
-        FRAME_WINDOW.image(imgRGB)
-    
-if capture == True:
-    st.success('Imagem capturada')
+                if cname == 'Open_Palm' and init_frame == 0:
+                    init_frame = frame_timestamp_ms
+                elif cname == 'Open_Palm' and (frame_timestamp_ms - init_frame) > 3000:
+                    cv2.imwrite(f"captures/{str(myuuid)}.jpg", img)
+                    capture = True
+                    break
+                    
+                elif cname != 'Open_Palm':
+                    init_frame = 0
+
+            except:
+                pass
+
+            FRAME_WINDOW.image(imgRGB)
+
+st.markdown('---')
+
+if capture:
+    with open(f'forms/{str(myuuid)}.json', 'w') as fp:
+                        json.dump(data, fp)
+    st.success('Validação finalizada')
