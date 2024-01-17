@@ -153,7 +153,7 @@ with col2:
         st.subheader('Mantenha sua mão aberta')
 
     FRAME_WINDOW = st.image([])
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
 
     if not cap.isOpened():
         print("Error: Could not open video file")
