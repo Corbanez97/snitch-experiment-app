@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 import cv2
 import mediapipe as mp
@@ -13,60 +14,7 @@ import json
 def on_page_load():
     st.set_page_config(layout="wide")
 
-cursos = [
-    "Administração",
-    "Agronomia",
-    "Arquitetura e Urbanismo",
-    "Arquivologia",
-    "Artes Cênicas",
-    "Artes Visuais",
-    "Biblioteconomia",
-    "Biomedicina",
-    "Biotecnologia",
-    "Ciência da Computação",
-    "Ciências Biológicas – Bacharelado",
-    "Ciências Biológicas – Licenciatura",
-    "Ciências Contábeis",
-    "Ciências Econômicas",
-    "Ciências Sociais – Bacharelado",
-    "Ciências Sociais – Licenciatura",
-    "Design de Moda",
-    "Design Gráfico",
-    "Direito",
-    "Educação Física – Bacharelado e Licenciatura (Matutino)",
-    "Educação Física – Bacharelado e Licenciatura (Noturno)",
-    "Enfermagem",
-    "Engenharia Civil",
-    "Engenharia Elétrica",
-    "Farmácia",
-    "Filosofia",
-    "Física – Bacharelado",
-    "Física – Licenciatura",
-    "Fisioterapia",
-    "Geografia – Bacharelado",
-    "Geografia – Licenciatura",
-    "História",
-    "Jornalismo",
-    "Letras Espanhol",
-    "Letras Francês",
-    "Letras Inglês",
-    "Letras Português",
-    "Matemática – Bacharelado",
-    "Matemática – Licenciatura",
-    "Medicina",
-    "Medicina Veterinária",
-    "Música",
-    "Nutrição",
-    "Odontologia",
-    "Pedagogia",
-    "Psicologia",
-    "Química – Bacharelado",
-    "Química – Licenciatura",
-    "Relações Públicas",
-    "Secretariado Executivo",
-    "Serviço Social",
-    "Zootecnia"
-]
+courses = pd.read_csv('data/courses.csv')
 
 # run first
 on_page_load()   
@@ -104,7 +52,7 @@ with col1:
                 ]
             )
 
-        area = st.selectbox('Curso', cursos)
+        area = st.selectbox('Curso', courses['courses'].unique())
 
         exp = st.selectbox(
             'Experiência em ambientes hospitalares?', 
@@ -196,5 +144,5 @@ st.markdown('---')
 
 if capture:
     with open(f'forms/{str(myuuid)}.json', 'w') as fp:
-                        json.dump(data, fp)
+        json.dump(data, fp)
     st.success('Validação finalizada')
