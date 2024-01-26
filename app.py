@@ -11,6 +11,9 @@ import uuid
 
 import json
 
+global CAMERA
+CAMERA = 0
+
 def on_page_load():
     st.set_page_config(layout="wide")
 
@@ -101,7 +104,7 @@ with col2:
         st.subheader('Mantenha sua mão aberta')
 
     FRAME_WINDOW = st.image([])
-    cap = cv2.VideoCapture(2)
+    cap = cv2.VideoCapture(CAMERA)
 
     if not cap.isOpened():
         print("Error: Could not open video file")
